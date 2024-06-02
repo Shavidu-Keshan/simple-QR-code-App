@@ -1,8 +1,8 @@
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox, filedialog
 import qrcode
 from PIL import Image, ImageTk
-import io
+import os
 
 class QRCodeGeneratorApp:
     def __init__(self, root):
@@ -18,7 +18,10 @@ class QRCodeGeneratorApp:
         self.generate_button = tk.Button(root, text="Generate QR Codes", command=self.generate_qr_codes)
         self.generate_button.pack(pady=20)
 
-        self.canvas = tk.Canvas(root, width=450, height=450)
+        self.save_button = tk.Button(root, text="Save QR Codes", command=self.save_qr_codes)
+        self.save_button.pack(pady=5)
+
+        self.canvas = tk.Canvas(root, width=400, height=400)
         self.canvas.pack()
 
         self.qr_images = []
@@ -45,10 +48,7 @@ class QRCodeGeneratorApp:
             img = qr.make_image(fill_color="black", back_color="white")
             img = img.resize((100, 100), Image.LANCZOS)
 
-            img_byte_arr = io.BytesIO()
-            img.save(img_byte_arr, format='PNG')
-            img_byte_arr = img_byte_arr.getvalue()
-            img = Image.open(io.BytesIO(img_byte_arr))
+            img_byte_arr = ImageTk.PhotoImage(img)._PhotoImage__photo.write("img{}.png".format(index), format='png')
 
             photo_img = ImageTk.PhotoImage(img)
             self.qr_images.append(photo_img)
@@ -57,7 +57,20 @@ class QRCodeGeneratorApp:
             y_position = (index // 4) * 110 + 10
             self.canvas.create_image(x_position, y_position, anchor='nw', image=photo_img)
 
+    def save_qr_codes(self):
+        if not self.qr_images:
+            messagebox.showerror("Error", "No QR codes generated.")
+            return
+
+        directory = filedialog.askdirectory(initialdir=os.getcwd(), title="Select Directory to Save QR Codes")
+        if directory:
+            for index, qr_image in enumerate(self.qr_images):
+                qr_image.write(os.path.join(directory, f"qr_code_{index}.png"), format="png")
+
+            messagebox.showinfo("Success", "QR codes saved successfully.")
+
 if __name__ == "__main__":
     root = tk.Tk()
     app = QRCodeGeneratorApp(root)
     root.mainloop()
+
