@@ -18,8 +18,10 @@ class QRCodeGeneratorApp:
         self.generate_button = tk.Button(root, text="Generate QR Codes", command=self.generate_qr_codes)
         self.generate_button.pack(pady=20)
 
-        self.canvas = tk.Canvas(root, width=400, height=400)
+        self.canvas = tk.Canvas(root, width=450, height=450)
         self.canvas.pack()
+
+        self.qr_images = []
 
     def generate_qr_codes(self):
         values = self.entry.get().split(',')
@@ -28,6 +30,7 @@ class QRCodeGeneratorApp:
             return
 
         self.canvas.delete("all")
+        self.qr_images.clear()
         
         for index, value in enumerate(values):
             qr = qrcode.QRCode(
@@ -47,15 +50,14 @@ class QRCodeGeneratorApp:
             img_byte_arr = img_byte_arr.getvalue()
             img = Image.open(io.BytesIO(img_byte_arr))
 
-            img = ImageTk.PhotoImage(img)
+            photo_img = ImageTk.PhotoImage(img)
+            self.qr_images.append(photo_img)
 
             x_position = (index % 4) * 110 + 10
             y_position = (index // 4) * 110 + 10
-            self.canvas.create_image(x_position, y_position, anchor='nw', image=img)
-            self.canvas.image = img
+            self.canvas.create_image(x_position, y_position, anchor='nw', image=photo_img)
 
 if __name__ == "__main__":
     root = tk.Tk()
     app = QRCodeGeneratorApp(root)
     root.mainloop()
-
